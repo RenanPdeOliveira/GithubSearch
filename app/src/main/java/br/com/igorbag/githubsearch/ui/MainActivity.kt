@@ -3,77 +3,90 @@ package br.com.igorbag.githubsearch.ui
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.widget.Button
-import android.widget.EditText
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.recyclerview.widget.RecyclerView
-import br.com.igorbag.githubsearch.R
-import br.com.igorbag.githubsearch.data.GitHubService
-import br.com.igorbag.githubsearch.domain.Repository
+import androidx.lifecycle.lifecycleScope
+import br.com.igorbag.githubsearch.data.RetrofitApi
+import br.com.igorbag.githubsearch.databinding.ActivityMainBinding
+import br.com.igorbag.githubsearch.ui.adapter.RepositoryAdapter
+import br.com.igorbag.githubsearch.ui.util.UiEvent
+import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
-    lateinit var nomeUsuario: EditText
-    lateinit var btnConfirmar: Button
-    lateinit var listaRepositories: RecyclerView
-    lateinit var githubApi: GitHubService
+    private lateinit var binding: ActivityMainBinding
+
+    private var adapter = RepositoryAdapter(::openBrowser)
+
+    private val viewModel: RepositoryViewModel by viewModels {
+        RepositoryViewModel.provideViewModelFactory(RetrofitApi.provideGithubService())
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-        setupView()
-        showUserName()
-        setupRetrofit()
-        getAllReposByUserName()
-    }
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        binding.rvRepositories.adapter = adapter
+        lifecycleScope.launch {
+            viewModel.uiEvent.collect { event ->
+                when (event) {
+                    is UiEvent.ShowSnackBar -> {
+                        Snackbar.make(binding.root, event.message, Snackbar.LENGTH_LONG).show()
+                    }
+                }
+            }
 
-    // Metodo responsavel por realizar o setup da view e recuperar os Ids do layout
-    fun setupView() {
-        //@TODO 1 - Recuperar os Id's da tela para a Activity com o findViewById
+            viewModel.repositoryList.collect { list ->
+                adapter.submitList(list)
+            }
+        }
+        //showUserName()
+        setupRetrofit()
+        //getAllReposByUserName()
+        binding.btnConfirm.setOnClickListener {
+            val user = binding.etUserName.text.toString()
+            viewModel.onEvent(MainEvent.OnConfirmClick(user))
+        }
     }
 
     //metodo responsavel por configurar os listeners click da tela
-    private fun setupListeners() {
-        //@TODO 2 - colocar a acao de click do botao confirmar
-    }
+    /*private fun setupListeners() {
+        binding.btnConfirm.setOnClickListener {
+            val user = binding.etUserName.text.toString()
+            viewModel.onEvent(MainEvent.OnConfirmClick(user))
+        }
+    }*/
 
 
     // salvar o usuario preenchido no EditText utilizando uma SharedPreferences
-    private fun saveUserLocal() {
+    /*private fun saveUserLocal() {
         //@TODO 3 - Persistir o usuario preenchido na editText com a SharedPref no listener do botao salvar
     }
 
     private fun showUserName() {
         //@TODO 4- depois de persistir o usuario exibir sempre as informacoes no EditText  se a sharedpref possuir algum valor, exibir no proprio editText o valor salvo
-    }
+    }*/
 
     //Metodo responsavel por fazer a configuracao base do Retrofit
-    fun setupRetrofit() {
-        /*
-           @TODO 5 -  realizar a Configuracao base do retrofit
-           Documentacao oficial do retrofit - https://square.github.io/retrofit/
-           URL_BASE da API do  GitHub= https://api.github.com/
-           lembre-se de utilizar o GsonConverterFactory mostrado no curso
-        */
+    private fun setupRetrofit() {
+        RetrofitApi.provideGithubService()
     }
 
     //Metodo responsavel por buscar todos os repositorios do usuario fornecido
-    fun getAllReposByUserName() {
+    /*fun getAllReposByUserName() {
         // TODO 6 - realizar a implementacao do callback do retrofit e chamar o metodo setupAdapter se retornar os dados com sucesso
-    }
+    }*/
 
     // Metodo responsavel por realizar a configuracao do adapter
-    fun setupAdapter(list: List<Repository>) {
-        /*
-            @TODO 7 - Implementar a configuracao do Adapter , construir o adapter e instancia-lo
-            passando a listagem dos repositorios
-         */
-    }
+    /*fun setupAdapter(list: List<RepositoryItem>) {
+        binding.rvRepositories.adapter = adapter
+    }*/
 
 
     // Metodo responsavel por compartilhar o link do repositorio selecionado
     // @Todo 11 - Colocar esse metodo no click do share item do adapter
-    fun shareRepositoryLink(urlRepository: String) {
+    /*fun shareRepositoryLink(urlRepository: String) {
         val sendIntent: Intent = Intent().apply {
             action = Intent.ACTION_SEND
             putExtra(Intent.EXTRA_TEXT, urlRepository)
@@ -82,12 +95,9 @@ class MainActivity : AppCompatActivity() {
 
         val shareIntent = Intent.createChooser(sendIntent, null)
         startActivity(shareIntent)
-    }
+    }*/
 
-    // Metodo responsavel por abrir o browser com o link informado do repositorio
-
-    // @Todo 12 - Colocar esse metodo no click item do adapter
-    fun openBrowser(urlRepository: String) {
+    private fun openBrowser(urlRepository: String) {
         startActivity(
             Intent(
                 Intent.ACTION_VIEW,
