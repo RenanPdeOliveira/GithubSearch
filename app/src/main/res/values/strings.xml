@@ -4,4 +4,6 @@
     <string name="confirm">Confirm</string>
     <string name="share_button">Share button</string>
     <string name="repository_name">Repository name</string>
+    <string name="tv_empty_state">There is no repository list. Insert user name on above field!</string>
+    <string name="image_empty_state">Empty state image</string>
 </resources>

@@ -3,11 +3,12 @@ package br.com.igorbag.githubsearch.ui
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import br.com.igorbag.githubsearch.data.GitHubService
+import br.com.igorbag.githubsearch.data.remote.GitHubService
 import br.com.igorbag.githubsearch.data.repository.AppRepositoryImpl
 import br.com.igorbag.githubsearch.domain.RepositoryItem
 import br.com.igorbag.githubsearch.domain.repository.AppRepository
 import br.com.igorbag.githubsearch.domain.util.Resource
+import br.com.igorbag.githubsearch.ui.event.MainEvent
 import br.com.igorbag.githubsearch.ui.util.UiEvent
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -45,6 +46,7 @@ class RepositoryViewModel(
 
                 is Resource.Error -> {
                     _uiEvent.send(UiEvent.ShowSnackBar("Could not load the list!"))
+                    _repositoryList.value = emptyList()
                 }
             }
         } else {

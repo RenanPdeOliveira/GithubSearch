@@ -1,9 +1,9 @@
-package br.com.igorbag.githubsearch.data
+package br.com.igorbag.githubsearch.data.remote
 
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
-object RetrofitApi {
+object RetrofitModule {
 
     fun provideGithubService(): GitHubService {
         return Retrofit.Builder()
